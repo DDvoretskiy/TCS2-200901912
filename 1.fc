@@ -14,7 +14,7 @@
     throw_unless(50, ((a >= 1) & (a < 1048576)) & ((b >= 1) & (b < 1048576)));
 
     ;; Use Euclidean Algorithm to find the Greatest Common Divisor of the two numbers.
-    while (a != 0 & b! = 0) {
+    while ((a != 0) & (b != 0)) {
         if (a >= b) {
             a = a % b;
         } else {
