@@ -9,11 +9,12 @@
 }
 
 ;; testable
-(int) gcd(int a, int b) method_id {
-    ;; Assert that the numbers are in range.
-    throw_unless(50, ((a >= 1) & (a < 1048576)) & ((b >= 1) & (b < 1048576)));
+int gcd(int a, int b) method_id {
 
-    ;; Use Euclidean Algorithm to find the Greatest Common Divisor of the two numbers.
+    (int min, int max) = minmax(a, b);
+    throw_if(5, min < 1);
+    throw_if(5, max > 1048575);
+
     while ((a != 0) & (b != 0)) {
         if (a >= b) {
             a = a % b;
@@ -21,5 +22,5 @@
             b = b % a;
         }
     }
-    return (a+b);
+    return a + b;
 }
