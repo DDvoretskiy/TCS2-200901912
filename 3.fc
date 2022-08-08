@@ -21,5 +21,95 @@
 
 ;; testable
 (int, tuple) validate_message(cell message) method_id {
-  return (-1, unsafe_tuple([null(), null(), 0]));
+
+  slice d_msg = message.begin_parse();
+
+  if (slice_data_empty?(d_msg)) {
+    return (0, null());
+  }
+
+  slice src_addr = null();
+  slice dest_addr = null();
+  int amount = 0;
+
+
+  int addr_type = d_msg~load_uint(1);
+
+  if (addr_type == 0) {
+    int flags = d_msg~load_uint(3);
+    src_addr = d_msg~load_msg_addr();
+    dest_addr = d_msg~load_msg_addr();
+
+    if (equal_slice(src_addr, dest_addr)) {
+      return (0, null());
+    }
+
+    if (first(parse_addr(src_addr)) == 0) {
+      src_addr = null();
+    }
+    if (first(parse_addr(dest_addr)) == 0) {
+      dest_addr = null();
+    }
+
+    amount = d_msg~load_grams();
+
+
+    int ihr_fee = d_msg~load_grams();
+    int fwf_fee = d_msg~load_grams();
+    int clocal = d_msg~load_uint(64);
+    if (clocal > cur_lt()) {
+      return (0, null());
+    }
+
+    int cunix = d_msg~load_uint(32);
+    if (cunix > now()) {
+      return (0, null());
+    }
+  }
+
+  if (addr_type == 1) {
+
+    int ext_addr_type = d_msg~load_uint(1);
+
+    src_addr = d_msg~load_msg_addr();
+    dest_addr = d_msg~load_msg_addr();
+    if equal_slice(src_addr, dest_addr) {
+      return (0, null());
+    }
+    if (first(parse_addr(src_addr)) == 0) {
+      src_addr = null();
+    }
+    if (first(parse_addr(dest_addr)) == 0) {
+      dest_addr = null();
+    }
+
+    if (ext_addr_type == 0){
+      amount = d_msg~load_grams();
+    }
+    if (ext_addr_type == 1) {
+      int clocal = d_msg~load_uint(64);
+      if (clocal > cur_lt()) {
+        return (0, null());
+      }
+      int cunix = d_msg~load_uint(32);
+      if (cunix > now()) {
+        return (0, null());
+      }
+    }
+  }
+
+  int init_and_inplace = d_msg~load_uint(2);
+
+  (int n_last_bits, int n_refs) = d_msg.slice_bits_refs();
+
+  if (init_and_inplace > n_refs) {
+    return (0, null());
+  }
+
+  if ((init_and_inplace == 0) & (n_last_bits == 0)) {
+    return (0, null());
+  }
+
+  return (-1, unsafe_tuple([src_addr, dest_addr, amount]));
+
 }
